@@ -89,7 +89,7 @@ class Response implements Responsable
         $only = array_filter(explode(',', $request->header('X-Inertia-Partial-Data', '')));
 
         $props = ($only && $request->header('X-Inertia-Partial-Component') === $this->component)
-            ? Arr::only($this->props, $only)
+            ? $this->array_dot_only($this->props, $only)
             : array_filter($this->props, static function ($prop) {
                 return ! ($prop instanceof LazyProp);
             });
@@ -108,6 +108,15 @@ class Response implements Responsable
         }
 
         return ResponseFactory::view($this->rootView, $this->viewData + ['page' => $page]);
+    }
+
+    function array_dot_only($array, $keys)
+    {
+        $newArray = [];
+        foreach ((array) $keys as $key) {
+            \Illuminate\Support\Arr::set($newArray, $key, \Illuminate\Support\Arr::get($array, $key));
+        }
+        return $newArray;
     }
 
     /**
